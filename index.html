@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1パチ計算機（カスタム貸玉版）</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; }
+        .card { background: white; padding: 20px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; background: #fafafa; }
+        input:focus { border-color: #28a745; outline: none; background: #fff; }
+        .config-section { background: #fff9db; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffe066; }
+        .result { margin-top: 20px; padding: 15px; background: #28a745; color: #fff; border-radius: 8px; text-align: center; }
+        .result p { margin: 8px 0; font-size: 14px; opacity: 0.9; }
+        .highlight { color: #fff; font-size: 1.8em; font-weight: bold; display: block; margin-top: 5px; }
+        .sub-result { font-size: 12px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>1パチ ボーダー計算</h2>
+
+    <div class="config-section">
+        <label>💰 1,000円あたりの貸玉数 (個)</label>
+        <input type="number" id="balls_per_1000" value="1000" style="border-color: #f08c00;">
+        <p style="font-size: 11px; color: #868e96; margin: 5px 0 0;">※1,000円で何玉借りれるか入力</p>
+    </div>
+    
+    <div class="input-group">
+        <label>① 現金投資額 (円)</label>
+        <input type="number" id="cash_inv" value="1000" step="200">
+    </div>
+
+    <div class="input-group">
+        <label>② 使用した持ち玉 (個)</label>
+        <input type="number" id="ball_inv" value="0" step="100">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+    <div class="input-group">
+        <label>現在の回転数 (データ機)</label>
+        <input type="number" id="total_rotations" placeholder="例: 150">
+    </div>
+
+    <div class="input-group">
+        <label>打ち始めの回転数</label>
+        <input type="number" id="start_rotations" value="0">
+    </div>
+
+    <div class="result">
+        <p>1,000円あたりの回転率</p>
+        <span id="rate" class="highlight">0.0</span>
+        <div class="sub-result">
+            総消費玉数: <span id="total_balls_text">0</span> 玉
+        </div>
+    </div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculate);
+    });
+
+    function calculate() {
+        const ballsPer1000 = parseFloat(document.getElementById('balls_per_1000').value) || 1000;
+        const cash = parseFloat(document.getElementById('cash_inv').value) || 0;
+        const ballInv = parseFloat(document.getElementById('ball_inv').value) || 0;
+        const totalRot = parseFloat(document.getElementById('total_rotations').value) || 0;
+        const startRot = parseFloat(document.getElementById('start_rotations').value) || 0;
+
+        // 現金を玉数に換算
+        const cashToBalls = (cash / 1000) * ballsPer1000;
+        // 総消費玉数 (現金からの玉数 + 直接使った持ち玉)
+        const totalBallsUsed = cashToBalls + ballInv;
+        
+        const diffRot = totalRot - startRot;
+
+        if (totalBallsUsed > 0 && diffRot >= 0) {
+            // 「1,000円分の玉数（設定した貸玉数）」で何回回ったかを計算
+            const rate = (diffRot / totalBallsUsed) * ballsPer1000;
+            
+            document.getElementById('rate').innerText = rate.toFixed(1) + " 回";
+            document.getElementById('total_balls_text').innerText = Math.round(totalBallsUsed).toLocaleString();
+        } else {
+            document.getElementById('rate').innerText = "0.0";
+            document.getElementById('total_balls_text').innerText = "0";
+        }
+    }
+</script>
+
+</body>
+</html>
